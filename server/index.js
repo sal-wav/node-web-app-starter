@@ -29,6 +29,30 @@ const server = http.createServer(async (req, res) => {
         res.statusCode = 200;
         res.end(txtFileContents);
         return;
+    } else if(req.url === "/items" && req.method === "POST") {
+        let body = '';
+        for await (let chunk of req) {
+            body += chunk;
+        }
+
+        const keyValuePairs = body.split('&')
+            .map(keyValuePairs => keyValuePairs.split('='))
+            .map(([key, value]) => [key, value.replace(/\+/g, ' ')])
+            .map(([key, value]) => [key, decodeURIComponent(value)])
+            .reduce((acc, [key, value]) => {
+                acc[key] = value;
+                return acc;
+            }, {});
+
+        // let firstSplit = body.split("&");
+        // let secondSplit = firstSplit.split("=");
+        // let thirdSplit = secondSplit.replace(/\+/g, ' ');
+        // let fourthSplit = decodeURIComponent(thirdSplit); 
+        
+        res.statusCode = 302;
+        res.setHeader('Location', '/');
+        res.end();
+        return;
     }
     let items = await Item.findAll();
     let length = items.length;
